@@ -78,7 +78,7 @@ public class Contato {
         this.dataCriacao = dataCriacao;
     }
 
-    // toString most used for test and logs
+    // toString muito utilizado em teste e logs
     @Override
     public String toString() {
         return "Contato{" +

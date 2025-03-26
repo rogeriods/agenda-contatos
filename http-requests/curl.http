@@ -1,0 +1,23 @@
+curl --location 'localhost:8080/v1/contatos'
+
+curl --location 'localhost:8080/v1/contatos/1'
+
+curl --location 'localhost:8080/v1/contatos' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "nome": "Rogério D.",
+    "email": "rogerio.ds@hotmail.com",
+    "telefone": "11 98131.5698",
+    "tipo": "Corporativo"
+}'
+
+curl --location --request PUT 'localhost:8080/v1/contatos/3' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "nome": "Rogério Domingos",
+    "email": "rogerio.ds@hotmail.com",
+    "telefone": "+55 11 98131.5698",
+    "tipo": "Corporativo"
+}'
+
+curl --location --request DELETE 'localhost:8080/v1/contatos/4'

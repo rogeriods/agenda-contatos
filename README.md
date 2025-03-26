@@ -1,4 +1,4 @@
-# Agenda de Contatos REST API
+# Agenda de Contatos FullStack App
 
 ### Reference Documentation
 For further reference, please consider the following sections:
