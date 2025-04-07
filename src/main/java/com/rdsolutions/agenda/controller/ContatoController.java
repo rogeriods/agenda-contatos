@@ -4,26 +4,34 @@ import com.rdsolutions.agenda.exceptions.ContatoNotFoundException;
 import com.rdsolutions.agenda.model.Contato;
 import com.rdsolutions.agenda.repo.IContatoRepo;
 
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/contatos")
 public class ContatoController {
 
     private final IContatoRepo repo;
+    private final ContatoModelAssembler assembler;
 
-    public ContatoController(IContatoRepo repo) {
+    public ContatoController(IContatoRepo repo, ContatoModelAssembler assembler) {
         this.repo = repo;
+        this.assembler = assembler;
     }
 
     @GetMapping
-    public List<Contato> getAll() {
-        return repo.findAll();
+    public CollectionModel<EntityModel<Contato>> getAll() {
+        List<EntityModel<Contato>> contatos = repo.findAll().stream()
+            .map(assembler::toModel) 
+            .collect(Collectors.toList());
+
+        return CollectionModel.of(contatos, linkTo(methodOn(ContatoController.class).getAll()).withSelfRel());
     }
 
     // The return type of the method has changed from Contato to EntityModel<Contato>.
@@ -31,10 +39,7 @@ public class ContatoController {
     @GetMapping("/{id}")
     public EntityModel<Contato> getById(@PathVariable Long id) {
         Contato contato = repo.findById(id).orElseThrow(() -> new ContatoNotFoundException(id));
-
-        return EntityModel.of(contato,
-                linkTo(methodOn(ContatoController.class).getById(id)).withSelfRel(), // Selected reference
-                linkTo(methodOn(ContatoController.class).getAll()).withRel("contatos")); // Get all contacts
+        return assembler.toModel(contato);
     }
 
     @PostMapping
