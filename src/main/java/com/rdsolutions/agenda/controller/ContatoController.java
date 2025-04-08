@@ -6,6 +6,9 @@ import com.rdsolutions.agenda.repo.IContatoRepo;
 
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.ResponseEntity;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,27 +46,37 @@ public class ContatoController {
     }
 
     @PostMapping
-    public Contato create(@RequestBody Contato contato) {
+    public ResponseEntity<?> create(@RequestBody Contato contato) {
         contato.setDataCriacao(new Date());
-        return repo.save(contato);
+        EntityModel<Contato> entityModel = assembler.toModel(repo.save(contato));
+        return ResponseEntity
+            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+            .body(entityModel);
     }
 
     @PutMapping("/{id}")
-    public Contato replace(@RequestBody Contato newContato, @PathVariable Long id) {
-        return repo.findById(id)
-                .map(contato -> {
-                    contato.setNome(newContato.getNome());
-                    contato.setEmail(newContato.getEmail());
-                    contato.setTelefone(newContato.getTelefone());
-                    contato.setTipo(newContato.getTipo());
-                    contato.setDataCriacao(new Date());
-                    return repo.save(contato);
-                })
-                .orElseGet(() -> repo.save(newContato));
+    public ResponseEntity<?> replace(@RequestBody Contato newContato, @PathVariable Long id) {
+        Contato updatedContato = repo.findById(id)
+            .map(contato -> {
+                contato.setNome(newContato.getNome());
+                contato.setEmail(newContato.getEmail());
+                contato.setTelefone(newContato.getTelefone());
+                contato.setTipo(newContato.getTipo());
+                contato.setDataCriacao(new Date());
+                return repo.save(contato);
+            })
+            .orElseGet(() -> repo.save(newContato));
+        
+        EntityModel<Contato> entityModel = assembler.toModel(updatedContato);
+
+        return ResponseEntity
+            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+            .body(entityModel);
     }
 
     @DeleteMapping("/{id}")
-    void delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         repo.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
